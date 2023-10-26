@@ -1,10 +1,12 @@
 import { Stack, Text } from '@chakra-ui/react'
-import { VideoBubbleContent, VideoBubbleContentType } from '@typebot.io/schemas'
-import { TextInput } from '@/components/inputs'
+import {
+  VariableString,
+  VideoBubbleContent,
+  VideoBubbleContentType,
+} from '@typebot.io/schemas'
+import { NumberInput, TextInput } from '@/components/inputs'
 import { useScopedI18n } from '@/locales'
-
-const vimeoRegex = /vimeo\.com\/(\d+)/
-const youtubeRegex = /youtube\.com\/(watch\?v=|shorts\/)(\w+)|youtu\.be\/(\w+)/
+import { parseVideoUrl } from '@typebot.io/lib/parseVideoUrl'
 
 type Props = {
   content?: VideoBubbleContent
@@ -13,7 +15,7 @@ type Props = {
 
 export const VideoUploadContent = ({ content, onSubmit }: Props) => {
   const scopedT = useScopedI18n('editor.blocks.bubbles.video.settings')
-  const handleUrlChange = (url: string) => {
+  const updateUrl = (url: string) => {
     const info = parseVideoUrl(url)
     return onSubmit({
       type: info.type,
@@ -21,32 +23,34 @@ export const VideoUploadContent = ({ content, onSubmit }: Props) => {
       id: info.id,
     })
   }
+  const updateHeight = (height?: number | VariableString) => {
+    return onSubmit({
+      ...content,
+      height,
+    })
+  }
   return (
-    <Stack p="2">
-      <TextInput
-        placeholder={scopedT('worksWith.placeholder')}
-        defaultValue={content?.url ?? ''}
-        onChange={handleUrlChange}
-      />
-      <Text fontSize="sm" color="gray.400" textAlign="center">
-        {scopedT('worksWith.text')}
-      </Text>
+    <Stack p="2" spacing={4}>
+      <Stack>
+        <TextInput
+          placeholder={scopedT('worksWith.placeholder')}
+          defaultValue={content?.url ?? ''}
+          onChange={updateUrl}
+        />
+        <Text fontSize="sm" color="gray.400" textAlign="center">
+          {scopedT('worksWith.text')}
+        </Text>
+      </Stack>
+
+      {content?.type !== VideoBubbleContentType.URL && (
+        <NumberInput
+          label="Height:"
+          defaultValue={content?.height ?? 400}
+          onValueChange={updateHeight}
+          suffix={scopedT('numberInput.unit')}
+          width="150px"
+        />
+      )}
     </Stack>
   )
-}
-
-const parseVideoUrl = (
-  url: string
-): { type: VideoBubbleContentType; url: string; id?: string } => {
-  if (vimeoRegex.test(url)) {
-    const id = url.match(vimeoRegex)?.at(1)
-    if (!id) return { type: VideoBubbleContentType.URL, url }
-    return { type: VideoBubbleContentType.VIMEO, url, id }
-  }
-  if (youtubeRegex.test(url)) {
-    const id = url.match(youtubeRegex)?.at(2) ?? url.match(youtubeRegex)?.at(3)
-    if (!id) return { type: VideoBubbleContentType.URL, url }
-    return { type: VideoBubbleContentType.YOUTUBE, url, id }
-  }
-  return { type: VideoBubbleContentType.URL, url }
 }

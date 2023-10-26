@@ -5,21 +5,22 @@ import { updateSession } from './queries/updateSession'
 import { formatLogDetails } from './logs/helpers/formatLogDetails'
 import { createSession } from './queries/createSession'
 import { deleteSession } from './queries/deleteSession'
+import * as Sentry from '@sentry/nextjs'
 
 type Props = {
-  isFirstSave?: boolean
   session: Pick<ChatSession, 'state'> & { id?: string }
   input: ChatReply['input']
   logs: ChatReply['logs']
   clientSideActions: ChatReply['clientSideActions']
+  forceCreateSession?: boolean
 }
 
 export const saveStateToDatabase = async ({
-  isFirstSave,
   session: { state, id },
   input,
   logs,
   clientSideActions,
+  forceCreateSession,
 }: Props) => {
   const containsSetVariableClientSideAction = clientSideActions?.some(
     (action) => action.expectsDedicatedReply
@@ -35,7 +36,9 @@ export const saveStateToDatabase = async ({
   }
 
   const session =
-    id && !isFirstSave ? { state, id } : await createSession({ id, state })
+    id && !forceCreateSession
+      ? { state, id }
+      : await createSession({ id, state })
 
   if (!resultId) return session
 
@@ -51,13 +54,18 @@ export const saveStateToDatabase = async ({
   })
 
   if (logs && logs.length > 0)
-    await saveLogs(
-      logs.map((log) => ({
-        ...log,
-        resultId,
-        details: formatLogDetails(log.details),
-      }))
-    )
+    try {
+      await saveLogs(
+        logs.map((log) => ({
+          ...log,
+          resultId,
+          details: formatLogDetails(log.details),
+        }))
+      )
+    } catch (e) {
+      console.error('Failed to save logs', e)
+      Sentry.captureException(e)
+    }
 
   return session
 }

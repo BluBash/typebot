@@ -12,15 +12,11 @@ import {
   WhatsAppCredentials,
   defaultSessionExpiryTimeout,
 } from '@typebot.io/schemas/features/whatsapp'
-import { isInputBlock, isNotDefined } from '@typebot.io/lib/utils'
+import { isNotDefined } from '@typebot.io/lib/utils'
 import { startSession } from '../startSession'
-import { getNextGroup } from '../getNextGroup'
-import { continueBotFlow } from '../continueBotFlow'
-import { upsertResult } from '../queries/upsertResult'
 
 type Props = {
   incomingMessage?: string
-  sessionId: string
   workspaceId?: string
   credentials: WhatsAppCredentials['data'] & Pick<WhatsAppCredentials, 'id'>
   contact: NonNullable<SessionState['whatsApp']>['contact']
@@ -35,7 +31,7 @@ export const startWhatsAppSession = async ({
   | (ChatReply & {
       newSessionState: SessionState
     })
-  | undefined
+  | { error: string }
 > => {
   const publicTypebotsWithWhatsAppEnabled =
     (await prisma.publicTypebot.findMany({
@@ -60,23 +56,34 @@ export const startWhatsAppSession = async ({
       publicTypebot.settings.whatsApp?.isEnabled
   )
 
-  const publicTypebot =
-    botsWithWhatsAppEnabled.find(
-      (publicTypebot) =>
-        publicTypebot.settings.whatsApp?.startCondition &&
-        messageMatchStartCondition(
-          incomingMessage ?? '',
-          publicTypebot.settings.whatsApp?.startCondition
-        )
-    ) ?? botsWithWhatsAppEnabled[0]
+  const publicTypebotWithMatchedCondition = botsWithWhatsAppEnabled.find(
+    (publicTypebot) =>
+      (publicTypebot.settings.whatsApp?.startCondition?.comparisons.length ??
+        0) > 0 &&
+      messageMatchStartCondition(
+        incomingMessage ?? '',
+        publicTypebot.settings.whatsApp?.startCondition
+      )
+  )
 
-  if (isNotDefined(publicTypebot)) return
+  const publicTypebot =
+    publicTypebotWithMatchedCondition ??
+    botsWithWhatsAppEnabled.find(
+      (publicTypebot) => !publicTypebot.settings.whatsApp?.startCondition
+    )
+
+  if (isNotDefined(publicTypebot))
+    return botsWithWhatsAppEnabled.length > 0
+      ? { error: 'Message did not matched any condition' }
+      : { error: 'No public typebot with WhatsApp integration found' }
 
   const sessionExpiryTimeoutHours =
     publicTypebot.settings.whatsApp?.sessionExpiryTimeout ??
     defaultSessionExpiryTimeout
 
-  const session = await startSession({
+  return startSession({
+    version: 2,
+    message: incomingMessage,
     startParams: {
       typebot: publicTypebot.typebot.publicId as string,
     },
@@ -88,35 +95,6 @@ export const startWhatsAppSession = async ({
       expiryTimeout: sessionExpiryTimeoutHours * 60 * 60 * 1000,
     },
   })
-
-  let newSessionState: SessionState = session.newSessionState
-
-  // If first block is an input block, we can directly continue the bot flow
-  const firstEdgeId =
-    newSessionState.typebotsQueue[0].typebot.groups[0].blocks[0].outgoingEdgeId
-  const nextGroup = await getNextGroup(newSessionState)(firstEdgeId)
-  const firstBlock = nextGroup.group?.blocks.at(0)
-  if (firstBlock && isInputBlock(firstBlock)) {
-    const resultId = newSessionState.typebotsQueue[0].resultId
-    if (resultId)
-      await upsertResult({
-        hasStarted: true,
-        isCompleted: false,
-        resultId,
-        typebot: newSessionState.typebotsQueue[0].typebot,
-      })
-    newSessionState = (
-      await continueBotFlow({
-        ...newSessionState,
-        currentBlock: { groupId: firstBlock.groupId, blockId: firstBlock.id },
-      })(incomingMessage)
-    ).newSessionState
-  }
-
-  return {
-    ...session,
-    newSessionState,
-  }
 }
 
 export const messageMatchStartCondition = (

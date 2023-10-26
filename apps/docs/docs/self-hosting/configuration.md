@@ -147,35 +147,7 @@ Used for uploading images, videos, etc... It can be any S3 compatible object sto
 
 Note that for AWS S3, your endpoint is usually: `s3.<S3_REGION>.amazonaws.com`
 
-Your bucket must have the following policy that tells S3 to allow public read when an object is located under the public folder:
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "PublicRead",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::<BUCKET_NAME>/public/*"
-    }
-  ]
-}
-```
-
-You also need to configure CORS so that an object can be uploaded from the browser:
-
-```json
-[
-  {
-    "AllowedHeaders": ["*"],
-    "AllowedMethods": ["PUT", "POST"],
-    "AllowedOrigins": ["*"],
-    "ExposeHeaders": ["ETag"]
-  }
-]
-```
+In order to function properly, your S3 bucket must be configured. Make sure to read through the [S3 configuration](./guides/s3) doc.
 
 ## Giphy (GIF picker)
 
@@ -256,25 +228,15 @@ The related environment variables are listed here but you are probably not inter
 <details><summary><h4>Stripe</h4></summary>
 <p>
 
-| Parameter                               | Default | Description                                 |
-| --------------------------------------- | ------- | ------------------------------------------- |
-| NEXT_PUBLIC_STRIPE_PUBLIC_KEY           |         | Stripe public key                           |
-| STRIPE_SECRET_KEY                       |         | Stripe secret key                           |
-| STRIPE_STARTER_PRODUCT_ID               |         | Starter plan product ID                     |
-| STRIPE_STARTER_MONTHLY_PRICE_ID         |         | Starter monthly plan price id               |
-| STRIPE_STARTER_YEARLY_PRICE_ID          |         | Starter yearly plan price id                |
-| STRIPE_PRO_PRODUCT_ID                   |         | Pro plan product ID                         |
-| STRIPE_PRO_MONTHLY_PRICE_ID             |         | Pro monthly plan price id                   |
-| STRIPE_PRO_YEARLY_PRICE_ID              |         | Pro yearly plan price id                    |
-| STRIPE_STARTER_CHATS_MONTHLY_PRICE_ID   |         | Starter Additional chats monthly price id   |
-| STRIPE_STARTER_CHATS_YEARLY_PRICE_ID    |         | Starter Additional chats yearly price id    |
-| STRIPE_PRO_CHATS_MONTHLY_PRICE_ID       |         | Pro Additional chats monthly price id       |
-| STRIPE_PRO_CHATS_YEARLY_PRICE_ID        |         | Pro Additional chats yearly price id        |
-| STRIPE_STARTER_STORAGE_MONTHLY_PRICE_ID |         | Starter Additional storage monthly price id |
-| STRIPE_STARTER_STORAGE_YEARLY_PRICE_ID  |         | Starter Additional storage yearly price id  |
-| STRIPE_PRO_STORAGE_MONTHLY_PRICE_ID     |         | Pro Additional storage monthly price id     |
-| STRIPE_PRO_STORAGE_YEARLY_PRICE_ID      |         | Pro Additional storage yearly price id      |
-| STRIPE_WEBHOOK_SECRET                   |         | Stripe Webhook secret                       |
+| Parameter                     | Default | Description                               |
+| ----------------------------- | ------- | ----------------------------------------- |
+| NEXT_PUBLIC_STRIPE_PUBLIC_KEY |         | Stripe public key                         |
+| STRIPE_SECRET_KEY             |         | Stripe secret key                         |
+| STRIPE_STARTER_PRICE_ID       |         | Starter plan price id                     |
+| STRIPE_PRO_PRICE_ID           |         | Pro monthly plan price id                 |
+| STRIPE_STARTER_CHATS_PRICE_ID |         | Starter Additional chats monthly price id |
+| STRIPE_PRO_CHATS_PRICE_ID     |         | Pro Additional chats monthly price id     |
+| STRIPE_WEBHOOK_SECRET         |         | Stripe Webhook secret                     |
 
 </p></details>
 

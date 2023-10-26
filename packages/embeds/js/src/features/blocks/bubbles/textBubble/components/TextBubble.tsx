@@ -1,7 +1,7 @@
 import { TypingBubble } from '@/components'
 import type { TextBubbleContent, TypingEmulation } from '@typebot.io/schemas'
 import { For, createSignal, onCleanup, onMount } from 'solid-js'
-import { PlateBlock } from './plate/PlateBlock'
+import { PlateElement } from './plate/PlateBlock'
 import { computePlainText } from '../helpers/convertRichTextToPlainText'
 import { clsx } from 'clsx'
 import { isMobile } from '@/utils/isMobileSignal'
@@ -49,7 +49,7 @@ export const TextBubble = (props: Props) => {
   return (
     <div class="flex flex-col animate-fade-in" ref={ref}>
       <div class="flex w-full items-center">
-        <div class="flex relative items-start typebot-host-bubble">
+        <div class="flex relative items-start typebot-host-bubble max-w-full">
           <div
             class="flex items-center absolute px-4 py-2 bubble-typing "
             style={{
@@ -70,7 +70,7 @@ export const TextBubble = (props: Props) => {
             }}
           >
             <For each={props.content.richText}>
-              {(element) => <PlateBlock element={element} />}
+              {(element) => <PlateElement element={element} />}
             </For>
           </div>
         </div>
