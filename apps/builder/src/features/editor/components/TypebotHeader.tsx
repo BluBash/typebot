@@ -30,10 +30,10 @@ import { RightPanel, useEditor } from '../providers/EditorProvider'
 import { useTypebot } from '../providers/TypebotProvider'
 import { SupportBubble } from '@/components/SupportBubble'
 import { isCloudProdInstance } from '@/helpers/isCloudProdInstance'
-import { useScopedI18n } from '@/locales'
+import { useTranslate } from '@tolgee/react'
 
 export const TypebotHeader = () => {
-  const scopedT = useScopedI18n('editor.headers')
+  const { t } = useTranslate()
   const router = useRouter()
   const {
     typebot,
@@ -46,7 +46,12 @@ export const TypebotHeader = () => {
     canRedo,
     isSavingLoading,
   } = useTypebot()
-  const { setRightPanel, rightPanel, setStartPreviewAtGroup } = useEditor()
+  const {
+    setRightPanel,
+    rightPanel,
+    setStartPreviewAtGroup,
+    setStartPreviewAtEvent,
+  } = useEditor()
   const [isUndoShortcutTooltipOpen, setUndoShortcutTooltipOpen] =
     useState(false)
   const hideUndoShortcutTooltipLater = useDebouncedCallback(() => {
@@ -62,6 +67,7 @@ export const TypebotHeader = () => {
 
   const handlePreviewClick = async () => {
     setStartPreviewAtGroup(undefined)
+    setStartPreviewAtEvent(undefined)
     save().then()
     setRightPanel(RightPanel.PREVIEW)
   }
@@ -105,7 +111,7 @@ export const TypebotHeader = () => {
           variant={router.pathname.includes('/edit') ? 'outline' : 'ghost'}
           size="sm"
         >
-          {scopedT('flowButton.label')}
+          {t('editor.headers.flowButton.label')}
         </Button>
         <Button
           as={Link}
@@ -114,7 +120,7 @@ export const TypebotHeader = () => {
           variant={router.pathname.endsWith('theme') ? 'outline' : 'ghost'}
           size="sm"
         >
-          {scopedT('themeButton.label')}
+          {t('editor.headers.themeButton.label')}
         </Button>
         <Button
           as={Link}
@@ -123,7 +129,7 @@ export const TypebotHeader = () => {
           variant={router.pathname.endsWith('settings') ? 'outline' : 'ghost'}
           size="sm"
         >
-          {scopedT('settingsButton.label')}
+          {t('editor.headers.settingsButton.label')}
         </Button>
         <Button
           as={Link}
@@ -132,7 +138,7 @@ export const TypebotHeader = () => {
           variant={router.pathname.endsWith('share') ? 'outline' : 'ghost'}
           size="sm"
         >
-          {scopedT('shareButton.label')}
+          {t('editor.headers.shareButton.label')}
         </Button>
         {isDefined(publishedTypebot) && (
           <Button
@@ -142,7 +148,7 @@ export const TypebotHeader = () => {
             variant={router.pathname.includes('results') ? 'outline' : 'ghost'}
             size="sm"
           >
-            {scopedT('resultsButton.label')}
+            {t('editor.headers.resultsButton.label')}
           </Button>
         )}
       </HStack>
@@ -225,21 +231,23 @@ export const TypebotHeader = () => {
             </Tooltip>
           </HStack>
           <Button leftIcon={<BuoyIcon />} onClick={handleHelpClick} size="sm">
-            {scopedT('helpButton.label')}
+            {t('editor.headers.helpButton.label')}
           </Button>
         </HStack>
         {isSavingLoading && (
           <HStack>
             <Spinner speed="0.7s" size="sm" color="gray.400" />
             <Text fontSize="sm" color="gray.400">
-              {scopedT('savingSpinner.label')}
+              {t('editor.headers.savingSpinner.label')}
             </Text>
           </HStack>
         )}
       </HStack>
 
       <HStack right="40px" pos="absolute" display={['none', 'flex']}>
-        <CollaborationMenuButton isLoading={isNotDefined(typebot)} />
+        <Flex pos="relative">
+          <CollaborationMenuButton isLoading={isNotDefined(typebot)} />
+        </Flex>
         {router.pathname.includes('/edit') && isNotDefined(rightPanel) && (
           <Button
             colorScheme="gray"
@@ -247,7 +255,7 @@ export const TypebotHeader = () => {
             isLoading={isNotDefined(typebot)}
             size="sm"
           >
-            {scopedT('previewButton.label')}
+            {t('editor.headers.previewButton.label')}
           </Button>
         )}
         <PublishButton size="sm" />
