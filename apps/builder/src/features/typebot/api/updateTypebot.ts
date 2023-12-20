@@ -35,6 +35,7 @@ const typebotUpdateSchemaPick = {
   customDomain: true,
   isClosed: true,
   whatsAppCredentialsId: true,
+  riskLevel: true,
   events: true,
 } as const
 
@@ -42,7 +43,7 @@ export const updateTypebot = authenticatedProcedure
   .meta({
     openapi: {
       method: 'PATCH',
-      path: '/typebots/{typebotId}',
+      path: '/v1/typebots/{typebotId}',
       protect: true,
       summary: 'Update a typebot',
       tags: ['Typebot'],
@@ -79,7 +80,6 @@ export const updateTypebot = authenticatedProcedure
           id: true,
           customDomain: true,
           publicId: true,
-          workspaceId: true,
           collaborators: {
             select: {
               userId: true,
@@ -88,7 +88,16 @@ export const updateTypebot = authenticatedProcedure
           },
           workspace: {
             select: {
+              id: true,
               plan: true,
+              isSuspended: true,
+              isPastDue: true,
+              members: {
+                select: {
+                  userId: true,
+                  role: true,
+                },
+              },
             },
           },
           updatedAt: true,
@@ -160,7 +169,7 @@ export const updateTypebot = authenticatedProcedure
           selectedThemeTemplateId: typebot.selectedThemeTemplateId,
           events: typebot.events ?? undefined,
           groups: typebot.groups
-            ? await sanitizeGroups(existingTypebot.workspaceId)(typebot.groups)
+            ? await sanitizeGroups(existingTypebot.workspace.id)(typebot.groups)
             : undefined,
           theme: typebot.theme ? typebot.theme : undefined,
           settings: typebot.settings

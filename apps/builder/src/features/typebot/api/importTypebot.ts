@@ -19,6 +19,7 @@ import { migrateTypebot } from '@typebot.io/lib/migrations/migrateTypebot'
 const omittedProps = {
   id: true,
   whatsAppCredentialsId: true,
+  riskLevel: true,
   isClosed: true,
   isArchived: true,
   createdAt: true,
@@ -28,6 +29,7 @@ const omittedProps = {
   resultsTablePreferencesSchema: true,
   selectedThemeTemplateId: true,
   publicId: true,
+  folderId: true,
 } as const
 
 const importingTypebotSchema = z.preprocess(
@@ -62,6 +64,8 @@ const migrateImportingTypebot = (
     isArchived: false,
     whatsAppCredentialsId: null,
     publicId: null,
+    folderId: null,
+    riskLevel: null,
   } satisfies Typebot
   return migrateTypebot(fullTypebot)
 }
@@ -70,7 +74,7 @@ export const importTypebot = authenticatedProcedure
   .meta({
     openapi: {
       method: 'POST',
-      path: '/typebots/import',
+      path: '/v1/typebots/import',
       protect: true,
       summary: 'Import a typebot',
       tags: ['Typebot'],
