@@ -15,25 +15,7 @@ export const galleryTemplates: Pick<ThemeTemplate, 'id' | 'name' | 'theme'>[] =
     {
       id: 'typebot-light',
       name: 'Typebot Light',
-      theme: {
-        chat: {
-          inputs: {
-            color: '#303235',
-            backgroundColor: '#FFFFFF',
-            placeholderColor: '#9095A0',
-          },
-          buttons: { color: '#FFFFFF', backgroundColor: '#0042DA' },
-          hostAvatar: {
-            isEnabled: true,
-          },
-          hostBubbles: { color: '#303235', backgroundColor: '#F7F8FF' },
-          guestBubbles: { color: '#FFFFFF', backgroundColor: '#FF8E21' },
-        },
-        general: {
-          font: 'Open Sans',
-          background: { type: BackgroundType.COLOR, content: '#ffffff' },
-        },
-      },
+      theme: {},
     },
     {
       id: 'typebot-dark',
@@ -45,15 +27,9 @@ export const galleryTemplates: Pick<ThemeTemplate, 'id' | 'name' | 'theme'>[] =
             backgroundColor: '#1e293b',
             placeholderColor: '#9095A0',
           },
-          buttons: { color: '#ffffff', backgroundColor: '#1a5fff' },
-          hostAvatar: {
-            isEnabled: true,
-          },
           hostBubbles: { color: '#ffffff', backgroundColor: '#1e293b' },
-          guestBubbles: { color: '#FFFFFF', backgroundColor: '#FF8E21' },
         },
         general: {
-          font: 'Open Sans',
           background: { type: BackgroundType.COLOR, content: '#171923' },
         },
       },
@@ -63,19 +39,15 @@ export const galleryTemplates: Pick<ThemeTemplate, 'id' | 'name' | 'theme'>[] =
       name: 'Minimalist Black',
       theme: {
         chat: {
-          inputs: {
-            color: '#303235',
-            backgroundColor: '#FFFFFF',
-            placeholderColor: '#9095A0',
-          },
-          buttons: { color: '#FFFFFF', backgroundColor: '#303235' },
+          buttons: { backgroundColor: '#303235' },
           hostAvatar: { isEnabled: false },
-          hostBubbles: { color: '#303235', backgroundColor: '#F7F8FF' },
           guestBubbles: { color: '#303235', backgroundColor: '#F7F8FF' },
         },
         general: {
-          font: 'Inter',
-          background: { type: BackgroundType.COLOR, content: '#ffffff' },
+          font: {
+            type: 'Google',
+            family: 'Inter',
+          },
         },
       },
     },
@@ -84,19 +56,15 @@ export const galleryTemplates: Pick<ThemeTemplate, 'id' | 'name' | 'theme'>[] =
       name: 'Minimalist Teal',
       theme: {
         chat: {
-          inputs: {
-            color: '#303235',
-            backgroundColor: '#FFFFFF',
-            placeholderColor: '#9095A0',
-          },
-          buttons: { color: '#FFFFFF', backgroundColor: '#0d9488' },
+          buttons: { backgroundColor: '#0d9488' },
           hostAvatar: { isEnabled: false },
-          hostBubbles: { color: '#303235', backgroundColor: '#F7F8FF' },
           guestBubbles: { color: '#303235', backgroundColor: '#F7F8FF' },
         },
         general: {
-          font: 'Inter',
-          background: { type: BackgroundType.COLOR, content: '#ffffff' },
+          font: {
+            type: 'Google',
+            family: 'Inter',
+          },
         },
       },
     },
@@ -106,18 +74,14 @@ export const galleryTemplates: Pick<ThemeTemplate, 'id' | 'name' | 'theme'>[] =
       name: 'Bright Rain',
       theme: {
         chat: {
-          inputs: {
-            color: '#303235',
-            backgroundColor: '#FFFFFF',
-            placeholderColor: '#9095A0',
-          },
-          buttons: { color: '#fff', backgroundColor: '#D27A7D' },
-          hostAvatar: { isEnabled: true },
-          hostBubbles: { color: '#303235', backgroundColor: '#F7F8FF' },
+          buttons: { backgroundColor: '#D27A7D' },
           guestBubbles: { color: '#303235', backgroundColor: '#FDDDBF' },
         },
         general: {
-          font: 'Montserrat',
+          font: {
+            type: 'Google',
+            family: 'Montserrat',
+          },
           background: {
             type: BackgroundType.IMAGE,
             content: getOrigin() + '/images/backgrounds/brightRain.jpeg',
@@ -130,21 +94,45 @@ export const galleryTemplates: Pick<ThemeTemplate, 'id' | 'name' | 'theme'>[] =
       name: 'Ray of Lights',
       theme: {
         chat: {
-          inputs: {
-            color: '#303235',
-            backgroundColor: '#FFFFFF',
-            placeholderColor: '#9095A0',
-          },
-          buttons: { color: '#fff', backgroundColor: '#1A2249' },
-          hostAvatar: { isEnabled: true },
-          hostBubbles: { color: '#303235', backgroundColor: '#F7F8FF' },
-          guestBubbles: { color: '#fff', backgroundColor: '#1A2249' },
+          buttons: { backgroundColor: '#1A2249' },
+          guestBubbles: { backgroundColor: '#1A2249' },
         },
         general: {
-          font: 'Raleway',
+          font: {
+            type: 'Google',
+            family: 'Raleway',
+          },
           background: {
             type: BackgroundType.IMAGE,
             content: getOrigin() + '/images/backgrounds/rayOfLights.jpeg',
+          },
+        },
+      },
+    },
+    {
+      id: 'aqua-glass',
+      name: 'Aqua Glass',
+      theme: {
+        general: {
+          background: {
+            type: BackgroundType.IMAGE,
+            content:
+              'https://images.unsplash.com/photo-1552083974-186346191183?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0MjU2MDR8MHwxfHNlYXJjaHw4fHxhYnN0cmFjdHxlbnwwfDB8fHwxNzEzMjg2NDY1fDA&ixlib=rb-4.0.3&q=80&w=1080',
+          },
+        },
+        chat: {
+          container: {
+            maxWidth: '750px',
+            maxHeight: '80%',
+            backgroundColor: '#ffffff',
+            blur: 5,
+            opacity: 0.6,
+            border: {
+              thickness: 2,
+              color: '#FFFFFF',
+              roundeness: 'large',
+              opacity: 0.5,
+            },
           },
         },
       },

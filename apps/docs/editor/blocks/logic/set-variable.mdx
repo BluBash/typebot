@@ -3,6 +3,8 @@ title: Set variable
 icon: pen
 ---
 
+import { YoutubeVideo } from '/snippets/youtube-video.mdx'
+
 The "Set variable" block allows you to set a particular value to a variable.
 
 <Frame>
@@ -94,6 +96,42 @@ For example,
   [Valid value types](../../variables#valid-value-types) for more information.
 </Info>
 
+## Empty
+
+Resets your variable as if it was never initialized.
+
+## Append value(s)
+
+A conveniant value that automatically transform your variable into a list of strings. It will append the value(s) to the list.
+
+3 possible cases here:
+
+- If the variable is empty, it will create a new array with the provided value(s)
+- If the variable is not an array, it will create a new array with the existing value followed by the provided value(s).
+- If the variable is an array, it will concatenate the provided value(s) to the existing array.
+
+## Environment name
+
+This will set your variable with either `web` or `whatsapp` depending on the environment.
+
+## Transcript
+
+This preset value will save the entire conversation transcript in a variable. It is super useful to provide context to an AI block or to send it as a recap with the [Send email](../integrations/send-email) block.
+
+<YoutubeVideo id="OZLfiLp20f8" />
+
+## Result ID
+
+This will set your variable with the current result ID. The result ID is the ID that corresponds to a row of your [Results](../../../results/overview.mdx) table. It can be considered like a User ID for the currently chatting user.
+
+## Yesterday, Now, Tomorrow
+
+This will set your variable with the specified date and time in ISO format. You can optionally provide a time zone to convert the date to the specified time zone.
+
+## Random ID
+
+This will set your variable with a random ID with the CUID algorithm.
+
 ## Moment of the day
 
 It will set your variable with either one of these values based on the user's time of the day: `morning`, `afternoon`, `evening`, `night`.
@@ -122,6 +160,22 @@ This value block allows you to find the `Id` from `Ids` with the same index as `
   />
 </Frame>
 
+## Phone number
+
+Only available in WhatsApp. This will set your variable with the user's phone number.
+
+## Contact name
+
+Only available in WhatsApp. This will set your variable with the user's name.
+
+## Save in results
+
+By default, new variables are not persisted in the [Results](../../../results) table. They are only stored for the current user chat session. Enabling this option will save the variable in the `Results` table.
+
+## Execute on client
+
+This option is useful when you want to execute the custom code on the client side. This is only necessary when you need access the user's browser information. So, if you need access to `window`, `document`, `navigator`, etc., you should enable this option.
+
 ## Get user's geo location
 
 For this you can provide the following custom code:
@@ -130,21 +184,22 @@ For this you can provide the following custom code:
 function getLocation() {
   return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
-      position => resolve(`${position.coords.latitude}, ${position.coords.longitude}`),
-      error => resolve("error"),
+      (position) =>
+        resolve(`${position.coords.latitude}, ${position.coords.longitude}`),
+      (error) => resolve('error'),
       { enableHighAccuracy: true, timeout: 5000 }
-    );
-  });
+    )
+  })
 }
 
-const coords = await getLocation();
+const coords = await getLocation()
 
 // Check for error
-if (coords === "error") {
-  return "Unable to get location";
+if (coords === 'error') {
+  return 'Unable to get location'
 }
 
-return coords;
+return coords
 ```
 
 This custom function can only work when it is executed on the client browser so you need to make sure to enable the "Execute on client" option.

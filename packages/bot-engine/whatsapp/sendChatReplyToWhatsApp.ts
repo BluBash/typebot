@@ -10,13 +10,14 @@ import {
 import { convertMessageToWhatsAppMessage } from './convertMessageToWhatsAppMessage'
 import { sendWhatsAppMessage } from './sendWhatsAppMessage'
 import * as Sentry from '@sentry/nextjs'
-import { HTTPError } from 'got'
+import { HTTPError } from 'ky'
 import { convertInputToWhatsAppMessages } from './convertInputToWhatsAppMessage'
 import { isNotDefined } from '@typebot.io/lib/utils'
 import { computeTypingDuration } from '../computeTypingDuration'
 import { continueBotFlow } from '../continueBotFlow'
 import { InputBlockType } from '@typebot.io/schemas/features/blocks/inputs/constants'
 import { defaultSettings } from '@typebot.io/schemas/features/typebot/settings/constants'
+import { BubbleBlockType } from '@typebot.io/schemas/features/blocks/bubbles/constants'
 
 // Media can take some time to be delivered. This make sure we don't send a message before the media is delivered.
 const messageAfterMediaTimeout = 5000
@@ -39,7 +40,10 @@ export const sendChatReplyToWhatsApp = async ({
   credentials,
   state,
 }: Props): Promise<void> => {
-  const messagesBeforeInput = isLastMessageIncludedInInput(input)
+  const messagesBeforeInput = isLastMessageIncludedInInput(
+    input,
+    messages.at(-1)
+  )
     ? messages.slice(0, -1)
     : messages
 
@@ -54,7 +58,16 @@ export const sendChatReplyToWhatsApp = async ({
     const result = await executeClientSideAction({ to, credentials })(action)
     if (!result) continue
     const { input, newSessionState, messages, clientSideActions } =
-      await continueBotFlow(result.replyToSend, { version: 2, state })
+      await continueBotFlow(
+        result.replyToSend
+          ? { type: 'text', text: result.replyToSend }
+          : undefined,
+        {
+          version: 2,
+          state,
+          textBubbleContentFormat: 'richText',
+        }
+      )
 
     return sendChatReplyToWhatsApp({
       to,
@@ -120,7 +133,16 @@ export const sendChatReplyToWhatsApp = async ({
         )
         if (!result) continue
         const { input, newSessionState, messages, clientSideActions } =
-          await continueBotFlow(result.replyToSend, { version: 2, state })
+          await continueBotFlow(
+            result.replyToSend
+              ? { type: 'text', text: result.replyToSend }
+              : undefined,
+            {
+              version: 2,
+              state,
+              textBubbleContentFormat: 'richText',
+            }
+          )
 
         return sendChatReplyToWhatsApp({
           to,
@@ -137,7 +159,7 @@ export const sendChatReplyToWhatsApp = async ({
       Sentry.captureException(err, { extra: { message } })
       console.log('Failed to send message:', JSON.stringify(message, null, 2))
       if (err instanceof HTTPError)
-        console.log('HTTPError', err.response.statusCode, err.response.body)
+        console.log('HTTPError', err.response.status, await err.response.text())
     }
   }
 
@@ -168,7 +190,11 @@ export const sendChatReplyToWhatsApp = async ({
         Sentry.captureException(err, { extra: { message } })
         console.log('Failed to send message:', JSON.stringify(message, null, 2))
         if (err instanceof HTTPError)
-          console.log('HTTPError', err.response.statusCode, err.response.body)
+          console.log(
+            'HTTPError',
+            err.response.status,
+            await err.response.text()
+          )
       }
     }
   }
@@ -202,10 +228,14 @@ const getTypingDuration = ({
 }
 
 const isLastMessageIncludedInInput = (
-  input: ContinueChatResponse['input']
+  input: ContinueChatResponse['input'],
+  lastMessage?: ContinueChatResponse['messages'][number]
 ): boolean => {
   if (isNotDefined(input)) return false
-  return input.type === InputBlockType.CHOICE
+  return (
+    input.type === InputBlockType.CHOICE &&
+    (!lastMessage || lastMessage.type === BubbleBlockType.TEXT)
+  )
 }
 
 const executeClientSideAction =
@@ -245,7 +275,11 @@ const executeClientSideAction =
         Sentry.captureException(err, { extra: { message } })
         console.log('Failed to send message:', JSON.stringify(message, null, 2))
         if (err instanceof HTTPError)
-          console.log('HTTPError', err.response.statusCode, err.response.body)
+          console.log(
+            'HTTPError',
+            err.response.status,
+            await err.response.text()
+          )
       }
     }
   }

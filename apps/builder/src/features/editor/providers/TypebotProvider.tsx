@@ -1,4 +1,9 @@
-import { PublicTypebot, PublicTypebotV6, TypebotV6 } from '@typebot.io/schemas'
+import {
+  PublicTypebot,
+  PublicTypebotV6,
+  TypebotV6,
+  typebotV6Schema,
+} from '@typebot.io/schemas'
 import { Router } from 'next/router'
 import {
   createContext,
@@ -27,7 +32,7 @@ import { trpc } from '@/lib/trpc'
 import { EventsActions, eventsActions } from './typebotActions/events'
 import { useGroupsStore } from '@/features/graph/hooks/useGroupsStore'
 
-const autoSaveTimeout = 10000
+const autoSaveTimeout = 15000
 
 type UpdateTypebotPayload = Partial<
   Pick<
@@ -59,7 +64,7 @@ const typebotContext = createContext<
     is404: boolean
     isPublished: boolean
     isSavingLoading: boolean
-    save: () => Promise<TypebotV6 | undefined>
+    save: () => Promise<void>
     undo: () => void
     redo: () => void
     canRedo: boolean
@@ -169,7 +174,15 @@ export const TypebotProvider = ({
 
   const [
     localTypebot,
-    { redo, undo, flush, canRedo, canUndo, set: setLocalTypebot },
+    {
+      redo,
+      undo,
+      flush,
+      canRedo,
+      canUndo,
+      set: setLocalTypebot,
+      setUpdateDate,
+    },
   ] = useUndo<TypebotV6>(undefined, {
     isReadOnly,
     onUndo: (t) => {
@@ -211,19 +224,38 @@ export const TypebotProvider = ({
       const typebotToSave = {
         ...localTypebot,
         ...updates,
-        updatedAt: new Date(),
       }
-      if (dequal(omit(typebot, 'updatedAt'), omit(typebotToSave, 'updatedAt')))
+      if (
+        dequal(
+          JSON.parse(JSON.stringify(omit(typebot, 'updatedAt'))),
+          JSON.parse(JSON.stringify(omit(typebotToSave, 'updatedAt')))
+        )
+      )
         return
-      setLocalTypebot({ ...typebotToSave })
-      const { typebot: newTypebot } = await updateTypebot({
-        typebotId: typebotToSave.id,
-        typebot: typebotToSave,
-      })
-      setLocalTypebot({ ...newTypebot })
-      return newTypebot
+      const newParsedTypebot = typebotV6Schema.parse({ ...typebotToSave })
+      setLocalTypebot(newParsedTypebot)
+      try {
+        const {
+          typebot: { updatedAt },
+        } = await updateTypebot({
+          typebotId: newParsedTypebot.id,
+          typebot: newParsedTypebot,
+        })
+        setUpdateDate(updatedAt)
+      } catch {
+        setLocalTypebot({
+          ...localTypebot,
+        })
+      }
     },
-    [isReadOnly, localTypebot, setLocalTypebot, typebot, updateTypebot]
+    [
+      isReadOnly,
+      localTypebot,
+      setLocalTypebot,
+      setUpdateDate,
+      typebot,
+      updateTypebot,
+    ]
   )
 
   useAutoSave(

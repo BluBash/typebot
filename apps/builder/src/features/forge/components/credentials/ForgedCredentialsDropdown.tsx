@@ -14,8 +14,9 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { trpc } from '@/lib/trpc'
 import { useWorkspace } from '@/features/workspace/WorkspaceProvider'
-import { ForgedBlockDefinition } from '@typebot.io/forge-schemas'
+import { ForgedBlockDefinition } from '@typebot.io/forge-repository/types'
 import { useToast } from '@/hooks/useToast'
+import { Credentials } from '@typebot.io/schemas/features/credentials'
 
 type Props = Omit<ButtonProps, 'type'> & {
   blockDef: ForgedBlockDefinition
@@ -34,13 +35,14 @@ export const ForgedCredentialsDropdown = ({
   const router = useRouter()
   const { showToast } = useToast()
   const { workspace, currentRole } = useWorkspace()
-  const { data, refetch, isLoading } = trpc.forge.listCredentials.useQuery(
-    {
-      workspaceId: workspace?.id as string,
-      type: blockDef.id,
-    },
-    { enabled: !!workspace?.id }
-  )
+  const { data, refetch, isLoading } =
+    trpc.credentials.listCredentials.useQuery(
+      {
+        workspaceId: workspace?.id as string,
+        type: blockDef.id as Credentials['type'],
+      },
+      { enabled: !!workspace?.id }
+    )
   const [isDeleting, setIsDeleting] = useState<string>()
 
   const { mutate } = trpc.credentials.deleteCredentials.useMutation({
@@ -109,7 +111,7 @@ export const ForgedCredentialsDropdown = ({
         isLoading={isLoading}
         {...props}
       >
-        Add {blockDef.auth.name}
+        Add {blockDef.auth?.name}
       </Button>
     )
   }
@@ -130,7 +132,7 @@ export const ForgedCredentialsDropdown = ({
         >
           {currentCredential
             ? currentCredential.name
-            : `Select ${blockDef.auth.name}`}
+            : `Select ${blockDef.auth?.name}`}
         </Text>
       </MenuButton>
       <MenuList>

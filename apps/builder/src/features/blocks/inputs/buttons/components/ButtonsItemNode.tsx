@@ -1,6 +1,5 @@
 import {
   EditablePreview,
-  EditableInput,
   Editable,
   Fade,
   IconButton,
@@ -13,15 +12,17 @@ import {
   Portal,
   useColorModeValue,
   SlideFade,
+  EditableTextarea,
 } from '@chakra-ui/react'
 import { PlusIcon, SettingsIcon } from '@/components/icons'
 import { useTypebot } from '@/features/editor/providers/TypebotProvider'
 import { ButtonItem, Item, ItemIndices } from '@typebot.io/schemas'
 import React, { useRef, useState } from 'react'
-import { isNotDefined } from '@typebot.io/lib'
+import { isEmpty } from '@typebot.io/lib'
 import { useGraph } from '@/features/graph/providers/GraphProvider'
 import { ButtonsItemSettings } from './ButtonsItemSettings'
 import { useTranslate } from '@tolgee/react'
+import { convertStrToList } from '@typebot.io/lib/convertStrToList'
 
 type Props = {
   item: ButtonItem
@@ -34,7 +35,10 @@ export const ButtonsItemNode = ({ item, indices, isMouseOver }: Props) => {
   const { deleteItem, updateItem, createItem } = useTypebot()
   const { openedItemId, setOpenedItemId } = useGraph()
   const [itemValue, setItemValue] = useState(
-    item.content ?? t('blocks.inputs.button.clickToEdit.label')
+    item.content ??
+      (indices.itemIndex === 0
+        ? t('blocks.inputs.button.clickToEdit.label')
+        : '')
   )
   const editableRef = useRef<HTMLDivElement | null>(null)
   const ref = useRef<HTMLDivElement | null>(null)
@@ -50,10 +54,11 @@ export const ButtonsItemNode = ({ item, indices, isMouseOver }: Props) => {
       } as Item)
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyPress = async (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (
       e.key === 'Escape' &&
-      itemValue === t('blocks.inputs.button.clickToEdit.label')
+      (itemValue === t('blocks.inputs.button.clickToEdit.label') ||
+        itemValue === '')
     )
       deleteItem(indices)
     if (
@@ -62,6 +67,21 @@ export const ButtonsItemNode = ({ item, indices, isMouseOver }: Props) => {
       itemValue !== t('blocks.inputs.button.clickToEdit.label')
     )
       handlePlusClick()
+  }
+
+  const handleEditableChange = (val: string) => {
+    if (itemValue !== '') return setItemValue(val)
+    const values = convertStrToList(val)
+    if (values.length === 1) {
+      setItemValue(values[0])
+    } else {
+      values.forEach((v, i) => {
+        createItem(
+          { content: v },
+          { ...indices, itemIndex: indices.itemIndex + i }
+        )
+      })
+    }
   }
 
   const handlePlusClick = () => {
@@ -85,9 +105,12 @@ export const ButtonsItemNode = ({ item, indices, isMouseOver }: Props) => {
           <Editable
             ref={editableRef}
             flex="1"
-            startWithEditView={isNotDefined(item.content)}
+            startWithEditView={
+              isEmpty(item.content) ||
+              item.content === t('blocks.inputs.button.clickToEdit.label')
+            }
             value={itemValue}
-            onChange={setItemValue}
+            onChange={handleEditableChange}
             onSubmit={handleInputSubmit}
             onKeyDownCapture={handleKeyPress}
             maxW="180px"
@@ -101,7 +124,11 @@ export const ButtonsItemNode = ({ item, indices, isMouseOver }: Props) => {
               }
               cursor="pointer"
             />
-            <EditableInput onMouseDownCapture={(e) => e.stopPropagation()} />
+            <EditableTextarea
+              onMouseDownCapture={(e) => e.stopPropagation()}
+              resize="none"
+              onWheelCapture={(e) => e.stopPropagation()}
+            />
           </Editable>
           <HitboxExtension />
           <SlideFade

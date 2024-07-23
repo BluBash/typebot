@@ -1,4 +1,4 @@
-import { ForgedBlockDefinition } from '@typebot.io/forge-schemas'
+import { ForgedBlockDefinition } from '@typebot.io/forge-repository/types'
 import { BlockWithOptions } from '@typebot.io/schemas'
 import { InputBlockType } from '@typebot.io/schemas/features/blocks/inputs/constants'
 import { IntegrationBlockType } from '@typebot.io/schemas/features/blocks/integrations/constants'
@@ -65,8 +65,6 @@ export const getHelpDocUrl = (
       return 'https://docs.typebot.io/editor/blocks/logic/jump'
     case IntegrationBlockType.PIXEL:
       return 'https://docs.typebot.io/editor/blocks/integrations/pixel'
-    case IntegrationBlockType.ZEMANTIC_AI:
-      return 'https://docs.typebot.io/editor/blocks/integrations/zemantic-ai'
     case LogicBlockType.CONDITION:
       return 'https://docs.typebot.io/editor/blocks/logic/condition'
     default:

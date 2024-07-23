@@ -1,6 +1,6 @@
 import test, { expect } from '@playwright/test'
-import { createTypebots } from '@typebot.io/lib/playwright/databaseActions'
-import { parseDefaultGroupWithBlock } from '@typebot.io/lib/playwright/databaseHelpers'
+import { createTypebots } from '@typebot.io/playwright/databaseActions'
+import { parseDefaultGroupWithBlock } from '@typebot.io/playwright/databaseHelpers'
 import { createId } from '@paralleldrive/cuid2'
 import { stripePaymentForm } from '@/test/utils/selectorUtils'
 import { env } from '@typebot.io/env'
@@ -20,7 +20,8 @@ test.describe('Payment input block', () => {
 
     await page.goto(`/typebots/${typebotId}/edit`)
     await page.click('text=Configure...')
-    await page.getByRole('button', { name: 'Add Stripe account' }).click()
+    await page.getByRole('button', { name: 'Select Stripe account' }).click()
+    await page.getByRole('menuitem', { name: 'Connect new' }).click()
     await page.fill('[placeholder="Typebot"]', 'My Stripe Account')
     await page.fill('[placeholder="sk_test_..."]', env.STRIPE_SECRET_KEY ?? '')
     await page.fill('[placeholder="sk_live_..."]', env.STRIPE_SECRET_KEY ?? '')

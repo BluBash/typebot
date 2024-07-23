@@ -3,7 +3,7 @@ import { extendZodWithOpenApi } from 'zod-openapi'
 import { listVariableValue } from '../typebot/variable'
 import {
   googleAnalyticsOptionsSchema,
-  executableWebhookSchema,
+  executableHttpRequestSchema,
   pixelOptionsSchema,
   redirectOptionsSchema,
 } from '../blocks'
@@ -21,6 +21,7 @@ export type StartPropsToInject = z.infer<typeof startPropsToInjectSchema>
 
 const scriptToExecuteSchema = z.object({
   content: z.string(),
+  isCode: z.boolean().optional(),
   args: z.array(
     z.object({
       id: z.string(),
@@ -120,7 +121,7 @@ export const clientSideActionSchema = z.discriminatedUnion('type', [
   z
     .object({
       type: z.literal('webhookToExecute'),
-      webhookToExecute: executableWebhookSchema,
+      webhookToExecute: executableHttpRequestSchema,
     })
     .merge(clientSideActionBaseSchema)
     .openapi({

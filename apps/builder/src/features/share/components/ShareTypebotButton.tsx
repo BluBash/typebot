@@ -3,6 +3,8 @@ import {
   PopoverTrigger,
   PopoverContent,
   Button,
+  chakra,
+  Portal,
 } from '@chakra-ui/react'
 import { UsersIcon } from '@/components/icons'
 import React from 'react'
@@ -20,17 +22,22 @@ export const ShareTypebotButton = ({ isLoading }: { isLoading: boolean }) => {
           leftIcon={<UsersIcon />}
           aria-label={t('share.button.popover.ariaLabel')}
           size="sm"
+          iconSpacing={{ base: 0, xl: 2 }}
         >
-          {t('share.button.label')}
+          <chakra.span display={{ base: 'none', xl: 'inline' }}>
+            {t('share.button.label')}
+          </chakra.span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        shadow="lg"
-        width="430px"
-        rootProps={{ style: { transform: 'scale(0)' } }}
-      >
-        <SharePopoverContent />
-      </PopoverContent>
+      <Portal>
+        <PopoverContent
+          shadow="lg"
+          width="430px"
+          rootProps={{ style: { transform: 'scale(0)' } }}
+        >
+          <SharePopoverContent />
+        </PopoverContent>
+      </Portal>
     </Popover>
   )
 }
